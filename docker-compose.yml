@@ -1,0 +1,44 @@
+# 兼容旧版 docker-compose（v1）保留 version 字段；新版会提示 obsolete 警告，可忽略
+version: "3.8"
+
+services:
+  # ---------- Web 控制面板 ----------
+  chaoxing-web:
+    build: .
+    image: chaoxing-web:v14
+    container_name: chaoxing-web
+    command: ["python3", "web_panel.py"]
+    ports:
+      - "5000:5000"
+    volumes:
+      # ★ 关键：数据持久化目录（数据库 / 任务配置 / 日志）
+      # 删除容器、重建镜像都不会丢数据
+      - ./data:/app/data
+    environment:
+      - PORT=5000
+      - HOST=0.0.0.0
+      - PYTHONUNBUFFERED=1
+      - PYTHONIOENCODING=utf-8
+      - CHAOXING_DB=/app/data/chaoxing.db
+    restart: unless-stopped
+
+  # ---------- 任务 Worker（独立进程，互不影响） ----------
+  chaoxing-worker:
+    build: .
+    image: chaoxing-web:v14
+    container_name: chaoxing-worker
+    command: ["python3", "worker.py"]
+    depends_on:
+      - chaoxing-web
+    volumes:
+      - ./data:/app/data
+    environment:
+      - PYTHONUNBUFFERED=1
+      - PYTHONIOENCODING=utf-8
+      - CHAOXING_DB=/app/data/chaoxing.db
+      # 服务器重启后自动续跑被中断的任务（超星脚本是幂等的，会跳过已完成任务点）
+      - AUTO_RESUME=true
+      # ★ 这个容器内最多同时执行几个任务（总并发 = 所有 worker 容器的 MAX_CONCURRENT 之和）
+      #   有任务就自动开跑，最多到这个数；建议总数 3~5，太大容易被超星风控
+      - MAX_CONCURRENT=3
+    restart: unless-stopped

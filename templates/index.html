@@ -1,0 +1,1534 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>超星刷课助手</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+:root{
+  /* 间距刻度 */
+  --sp-1:4px;--sp-2:8px;--sp-3:12px;--sp-4:16px;--sp-5:20px;--sp-6:24px;
+  /* Arco 色板 */
+  --color-bg-1:#F7F8FA;--color-bg-2:#FFFFFF;
+  --color-fill-1:#F2F3F5;--color-fill-2:#F2F3F5;--color-fill-3:#E5E6EB;--color-fill-4:#C9CDD4;
+  --color-text-1:#1D2129;--color-text-2:#4E5969;--color-text-3:#86909C;--color-text-4:#C9CDD4;
+  --color-border:#E5E6EB;
+  --primary-6:22,93,255;--success-6:0,180,42;--danger-6:245,63,63;--warning-6:255,125,0;
+  --radius-sm:6px;--radius-md:8px;--radius-lg:12px;
+  --page-max:1200px;--header-h:56px;--sider-w:200px;
+  --shadow-card:0 1px 2px rgba(0,0,0,.04),0 2px 8px rgba(0,0,0,.04);
+  --shadow-pop:0 4px 16px rgba(0,0,0,.1);
+}
+body{
+  font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei","Segoe UI",Roboto,sans-serif;
+  background:var(--color-fill-1);color:var(--color-text-1);font-size:14px;line-height:1.5715;
+  -webkit-font-smoothing:antialiased;
+}
+
+/* ================= 布局 ================= */
+.app-layout{display:flex;height:100vh;overflow:hidden}
+.app-sider{width:var(--sider-w);flex-shrink:0;background:var(--color-bg-2);
+  box-shadow:2px 0 8px rgba(0,0,0,.06);z-index:10;display:flex;flex-direction:column}
+.sider-logo{height:var(--header-h);display:flex;align-items:center;gap:var(--sp-2);
+  padding:0 var(--sp-5);border-bottom:1px solid var(--color-fill-1);flex-shrink:0}
+.sider-logo .logo-mark{width:26px;height:26px;border-radius:var(--radius-sm);flex-shrink:0;
+  background:linear-gradient(135deg,#165DFF,#4080FF);display:flex;align-items:center;
+  justify-content:center;color:#fff;font-size:15px}
+.sider-logo .logo-text{font-size:15px;font-weight:600;white-space:nowrap}
+.sider-menu{flex:1;padding:var(--sp-2);overflow-y:auto}
+.menu-item{display:flex;align-items:center;gap:10px;height:40px;padding:0 var(--sp-3);
+  border-radius:var(--radius-sm);cursor:pointer;color:var(--color-text-2);
+  font-size:14px;margin-bottom:2px;transition:all .15s;white-space:nowrap}
+.menu-item:hover{background:var(--color-bg-1);color:var(--color-text-1)}
+.menu-item.active{background:rgba(var(--primary-6),.1);color:rgb(var(--primary-6));font-weight:500}
+.menu-item .mi-icon{font-size:16px;width:18px;text-align:center;flex-shrink:0}
+
+.app-main{flex:1;display:flex;flex-direction:column;min-width:0}
+.app-header{height:var(--header-h);flex-shrink:0;display:flex;align-items:center;
+  justify-content:space-between;gap:var(--sp-3);padding:0 var(--sp-5);
+  background:var(--color-bg-2);border-bottom:1px solid var(--color-border);z-index:9}
+.header-left{display:flex;align-items:center;gap:10px;min-width:0}
+.header-title{font-size:16px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.header-right{display:flex;align-items:center;gap:10px;flex-shrink:0}
+.header-user{display:flex;align-items:center;gap:6px;padding:4px 10px;border-radius:20px;
+  background:var(--color-fill-1);font-size:13px;color:var(--color-text-2);cursor:pointer}
+.header-user:hover{background:var(--color-fill-2)}
+
+.app-content{flex:1;overflow-y:auto;overflow-x:hidden;padding:var(--sp-5);background:var(--color-fill-1)}
+.content-inner{max-width:var(--page-max);margin:0 auto}
+
+/* ================= PageHeader ================= */
+.page-head{display:flex;flex-wrap:wrap;align-items:flex-start;justify-content:space-between;
+  gap:var(--sp-3);margin-bottom:var(--sp-4)}
+.page-head__main{min-width:0}
+.page-head__title{font-size:20px;font-weight:600;color:var(--color-text-1);line-height:1.4}
+.page-head__desc{margin-top:var(--sp-1);font-size:13px;color:var(--color-text-3)}
+.page-head__extra{display:flex;align-items:center;gap:var(--sp-2);flex-shrink:0}
+
+/* ================= 卡片 ================= */
+.card-soft{background:var(--color-bg-2);border-radius:var(--radius-md);
+  box-shadow:var(--shadow-card);border:none}
+.card{padding:var(--sp-5);margin-bottom:var(--sp-4)}
+.card-title{display:flex;align-items:center;gap:var(--sp-2);font-size:15px;font-weight:600;
+  color:var(--color-text-1);margin-bottom:var(--sp-4)}
+.card-title .ct-right{margin-left:auto;font-size:13px;font-weight:400;color:var(--color-text-3)}
+
+/* ================= StatCard ================= */
+.stat-row{display:grid;grid-template-columns:repeat(4,1fr);gap:var(--sp-4);margin-bottom:var(--sp-4)}
+.stat-card{display:flex;align-items:center;gap:var(--sp-4);padding:var(--sp-5);
+  background:var(--color-bg-2);border-radius:var(--radius-md);box-shadow:var(--shadow-card);
+  min-height:96px;height:100%}
+.stat-card__icon{flex-shrink:0;width:44px;height:44px;border-radius:var(--radius-md);
+  display:flex;align-items:center;justify-content:center;font-size:22px}
+.stat-card__body{min-width:0}
+.stat-card__label{font-size:13px;color:var(--color-text-3);margin-bottom:4px;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.stat-card__value{font-size:24px;font-weight:600;line-height:1.3;color:var(--color-text-1);
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.stat-card__unit{font-size:13px;font-weight:400;color:var(--color-text-3);margin-left:4px}
+.stat-card__sub{margin-top:4px;font-size:12px;color:var(--color-text-3)}
+
+/* ================= 任务状态卡 ================= */
+.course-line{display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:var(--sp-2)}
+.course-name{font-size:16px;font-weight:500;color:var(--color-text-1)}
+.meta{font-size:12px;color:var(--color-text-3)}
+.current-task{color:var(--color-text-1);word-break:break-all}
+.message{margin-top:4px;font-size:13px;color:var(--color-text-3)}
+.counts{margin-top:var(--sp-3);font-size:13px;color:var(--color-text-2)}
+.ok{color:rgb(var(--success-6))}
+.fail{color:rgb(var(--danger-6))}
+
+/* ================= 任务点列表 ================= */
+.task-items{margin-top:var(--sp-4);border-top:1px solid var(--color-fill-2);padding-top:var(--sp-3)}
+.task-items__head{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;
+  gap:var(--sp-2);margin-bottom:var(--sp-2)}
+.ti-title{font-size:13px;font-weight:600;color:var(--color-text-1)}
+.ti-legend{font-size:12px;color:var(--color-text-3)}
+.ti-legend .dot{display:inline-block;width:7px;height:7px;border-radius:50%;
+  margin-right:4px;vertical-align:middle}
+.dot.success{background:rgb(var(--success-6))}
+.dot.running{background:rgb(var(--primary-6))}
+.dot.pending{background:var(--color-fill-4)}
+.dot.failed{background:rgb(var(--danger-6))}
+.task-items__list{max-height:300px;overflow-y:auto;margin-right:-6px;padding-right:6px}
+.ti-chapter{display:flex;align-items:center;gap:6px;margin:10px 0 2px;padding:6px 8px;
+  background:var(--color-fill-1);border-radius:6px;font-size:13px;font-weight:600;
+  color:var(--color-text-1)}
+.ti-chapter__name{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ti-chapter__count{flex-shrink:0;font-size:12px;font-weight:500;color:var(--color-text-3);
+  font-variant-numeric:tabular-nums}
+.ti-group.active .ti-chapter{background:rgba(var(--primary-6),.14);color:rgb(var(--primary-6))}
+.task-item{display:flex;align-items:center;gap:var(--sp-2);padding:8px 2px 8px 10px;
+  border-bottom:1px solid var(--color-fill-1)}
+.task-item:last-child{border-bottom:none}
+.task-item.running{background:rgba(var(--primary-6),.06);border-radius:6px}
+.ti-idx{flex-shrink:0;width:22px;text-align:right;font-size:12px;color:var(--color-text-3);
+  font-variant-numeric:tabular-nums}
+.ti-name{flex:1;min-width:0;font-size:13px;color:var(--color-text-1);
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ti-status{flex-shrink:0;font-size:12px;font-weight:500}
+.ti-status.success{color:rgb(var(--success-6))}
+.ti-status.running{color:rgb(var(--primary-6))}
+.ti-status.pending{color:var(--color-text-3)}
+.ti-status.failed{color:rgb(var(--danger-6))}
+
+/* ================= 使用指引 ================= */
+.guide-step{display:flex;gap:var(--sp-3);padding:var(--sp-3) 0;
+  border-bottom:1px solid var(--color-fill-1)}
+.guide-step:last-child{border-bottom:none;padding-bottom:0}
+.guide-num{flex-shrink:0;width:22px;height:22px;border-radius:50%;
+  background:rgba(var(--primary-6),.12);color:rgb(var(--primary-6));
+  display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600}
+.guide-body{flex:1;min-width:0}
+.guide-t{font-size:14px;font-weight:500;color:var(--color-text-1)}
+.guide-d{margin-top:2px;font-size:12px;color:var(--color-text-3)}
+
+/* ================= 表单 ================= */
+.form-item{margin-bottom:var(--sp-4)}
+.form-item:last-child{margin-bottom:0}
+.form-label{display:block;font-size:13px;color:var(--color-text-2);margin-bottom:6px}
+.form-label .req{color:rgb(var(--danger-6));margin-left:2px}
+.input,.select{width:100%;height:36px;padding:0 var(--sp-3);border:1px solid var(--color-border);
+  border-radius:var(--radius-sm);font-size:14px;color:var(--color-text-1);
+  background:var(--color-bg-2);outline:none;transition:all .15s;font-family:inherit}
+.input:focus,.select:focus{border-color:rgb(var(--primary-6));
+  box-shadow:0 0 0 2px rgba(var(--primary-6),.1)}
+.input::placeholder{color:var(--color-text-4)}
+.input:disabled{background:var(--color-fill-1);color:var(--color-text-3);cursor:not-allowed}
+.select{appearance:none;cursor:pointer;
+  background-image:url("data:image/svg+xml;charset=utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%2386909C' d='M6 8L2 4h8z'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;background-position:right 12px center;padding-right:32px}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:var(--sp-4)}
+.form-hint{font-size:12px;color:var(--color-text-3);margin-top:6px;line-height:1.5}
+
+/* ================= 按钮 ================= */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;height:36px;
+  padding:0 var(--sp-4);border:none;border-radius:var(--radius-sm);font-size:14px;
+  font-weight:500;cursor:pointer;transition:all .15s;font-family:inherit;white-space:nowrap}
+.btn:active{transform:scale(.98)}
+.btn:disabled{opacity:.5;cursor:not-allowed;transform:none}
+.btn-primary{background:rgb(var(--primary-6));color:#fff}
+.btn-primary:hover:not(:disabled){background:#4080FF}
+.btn-success{background:rgb(var(--success-6));color:#fff}
+.btn-success:hover:not(:disabled){background:#00a025}
+.btn-warning{background:rgb(var(--warning-6));color:#fff}
+.btn-warning:hover:not(:disabled){background:#e67000}
+.btn-danger{background:rgb(var(--danger-6));color:#fff}
+.btn-danger:hover:not(:disabled){background:#dc2b2b}
+.btn-outline{background:var(--color-bg-2);color:var(--color-text-1);
+  border:1px solid var(--color-border)}
+.btn-outline:hover:not(:disabled){background:var(--color-bg-1);border-color:var(--color-text-4)}
+.btn-block{width:100%}
+.btn-sm{height:30px;padding:0 var(--sp-3);font-size:13px}
+.btn-lg{height:42px;font-size:15px}
+.btn-group{display:flex;gap:var(--sp-3);flex-wrap:wrap}
+
+/* ================= 课程列表 ================= */
+.course-item{display:flex;align-items:center;gap:var(--sp-3);padding:var(--sp-3) 14px;
+  border:1px solid var(--color-border);border-radius:var(--radius-sm);margin-bottom:var(--sp-2);
+  cursor:pointer;transition:all .15s;background:var(--color-bg-2)}
+.course-item:hover{border-color:rgb(var(--primary-6));background:var(--color-bg-1)}
+.course-item.selected{border-color:rgb(var(--primary-6));background:rgba(var(--primary-6),.06)}
+.cbox{width:18px;height:18px;border:1.5px solid var(--color-border);border-radius:4px;
+  flex-shrink:0;display:flex;align-items:center;justify-content:center;background:#fff;transition:all .15s}
+.course-item.selected .cbox{background:rgb(var(--primary-6));border-color:rgb(var(--primary-6))}
+.cbox::after{content:'';width:5px;height:9px;border:solid #fff;border-width:0 2px 2px 0;
+  transform:rotate(45deg) scale(0);transition:transform .15s;margin-top:-2px}
+.course-item.selected .cbox::after{transform:rotate(45deg) scale(1)}
+.course-info{flex:1;min-width:0}
+.course-name-sm{font-size:14px;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.course-meta{font-size:12px;color:var(--color-text-3);margin-top:2px}
+
+/* ================= 日志 ================= */
+.log-box{background:#1D2129;border-radius:var(--radius-sm);padding:14px;
+  font-family:"Cascadia Code","Fira Code",Consolas,monospace;font-size:12px;line-height:1.7;
+  max-height:400px;overflow-y:auto;white-space:pre-wrap;word-break:break-all}
+.log-line{display:flex;gap:var(--sp-2);margin-bottom:1px}
+.log-time{color:#6B7280;flex-shrink:0}
+.log-msg{color:#D1D5DB}
+.log-msg.error{color:#F87171}.log-msg.warning{color:#FBBF24}
+.log-msg.success{color:#4ADE80}.log-msg.sys{color:#60A5FA}
+.log-empty{color:#6B7280;text-align:center;padding:30px 0;font-size:13px}
+
+/* ================= 标签 ================= */
+.tag{display:inline-flex;align-items:center;gap:4px;height:22px;padding:0 var(--sp-2);
+  border-radius:4px;font-size:12px;font-weight:500}
+.tag-blue{background:rgba(var(--primary-6),.1);color:rgb(var(--primary-6))}
+.tag-green{background:rgba(var(--success-6),.1);color:rgb(var(--success-6))}
+.tag-orange{background:rgba(var(--warning-6),.1);color:rgb(var(--warning-6))}
+.tag-red{background:rgba(var(--danger-6),.1);color:rgb(var(--danger-6))}
+.tag-gray{background:var(--color-fill-1);color:var(--color-text-3)}
+
+/* ================= 开关 ================= */
+.switch-row{display:flex;align-items:center;justify-content:space-between;padding:10px 0}
+.switch-row .sr-label{font-size:13px;color:var(--color-text-2)}
+.switch{position:relative;width:40px;height:22px;background:var(--color-fill-3);
+  border-radius:11px;cursor:pointer;transition:background .2s;flex-shrink:0}
+.switch.on{background:rgb(var(--primary-6))}
+.switch::after{content:'';position:absolute;top:2px;left:2px;width:18px;height:18px;
+  background:#fff;border-radius:50%;transition:transform .2s;box-shadow:0 1px 3px rgba(0,0,0,.15)}
+.switch.on::after{transform:translateX(18px)}
+
+/* ================= 折叠 ================= */
+.coll-head{display:flex;align-items:center;justify-content:space-between;cursor:pointer;
+  padding:var(--sp-3) 0;font-size:14px;font-weight:500;color:var(--color-text-1);
+  user-select:none;border-top:1px solid var(--color-fill-1)}
+.coll-head:first-of-type{border-top:none}
+.coll-arrow{transition:transform .2s;font-size:12px;color:var(--color-text-3)}
+.coll-arrow.open{transform:rotate(90deg)}
+.coll-body{max-height:0;overflow:hidden;transition:max-height .3s ease}
+.coll-body.open{max-height:1200px;padding-top:var(--sp-2)}
+
+/* ================= 登录层 ================= */
+.gate{position:fixed;inset:0;background:var(--color-fill-1);z-index:999;
+  display:flex;align-items:center;justify-content:center;padding:var(--sp-5)}
+.gate-box{background:var(--color-bg-2);border-radius:var(--radius-lg);box-shadow:var(--shadow-pop);
+  padding:32px 28px;width:100%;max-width:380px}
+.gate-logo{width:48px;height:48px;border-radius:var(--radius-md);margin:0 auto var(--sp-4);
+  background:linear-gradient(135deg,#165DFF,#4080FF);display:flex;align-items:center;
+  justify-content:center;font-size:24px;color:#fff}
+.gate-box h2{font-size:18px;text-align:center;margin-bottom:6px}
+.gate-box .gate-sub{font-size:13px;color:var(--color-text-3);text-align:center;margin-bottom:var(--sp-6)}
+
+/* ================= 空状态 ================= */
+.empty{text-align:center;padding:40px var(--sp-5);color:var(--color-text-3);font-size:13px}
+.empty-icon{font-size:36px;margin-bottom:10px;opacity:.5}
+
+/* ================= 提示 ================= */
+.toast{position:fixed;top:70px;left:50%;transform:translateX(-50%);background:var(--color-text-1);
+  color:#fff;border-radius:var(--radius-sm);padding:10px var(--sp-5);font-size:14px;z-index:1000;
+  opacity:0;transition:all .3s;pointer-events:none;max-width:90%;text-align:center;
+  box-shadow:var(--shadow-pop)}
+.toast.show{opacity:1;top:80px}
+.toast.success{background:rgb(var(--success-6))}
+.toast.error{background:rgb(var(--danger-6))}
+
+.spin{display:inline-block;width:14px;height:14px;border:2px solid rgba(255,255,255,.3);
+  border-top-color:#fff;border-radius:50%;animation:sp .6s linear infinite}
+@keyframes sp{to{transform:rotate(360deg)}}
+
+.page{display:none}
+.page.active{display:block;animation:fadeIn .2s ease}
+@keyframes fadeIn{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+
+::-webkit-scrollbar{width:6px;height:6px}
+::-webkit-scrollbar-thumb{background:var(--color-text-4);border-radius:3px}
+::-webkit-scrollbar-track{background:transparent}
+
+.mobile-nav{display:none}
+.bottom-actions{display:none}
+
+/* ================= 手机端 ================= */
+@media (max-width:768px){
+  .app-sider{display:none}
+  .app-header{padding:0 14px}
+  .app-content{padding:var(--sp-3);padding-bottom:130px}
+  .card{padding:var(--sp-4);margin-bottom:var(--sp-3)}
+  .stat-row{grid-template-columns:1fr 1fr;gap:var(--sp-3)}
+  .stat-card{padding:var(--sp-4);min-height:84px;gap:var(--sp-3)}
+  .stat-card__icon{width:38px;height:38px;font-size:19px}
+  .stat-card__value{font-size:20px}
+  .form-row{grid-template-columns:1fr;gap:0}
+  .header-user .hu-name{display:none}
+  .page-head__title{font-size:18px}
+
+  .mobile-nav{display:flex;position:fixed;bottom:0;left:0;right:0;height:56px;
+    background:var(--color-bg-2);border-top:1px solid var(--color-border);z-index:100}
+  .mn-item{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;
+    gap:2px;font-size:11px;color:var(--color-text-3);cursor:pointer}
+  .mn-item.active{color:rgb(var(--primary-6))}
+  .mn-item .mn-icon{font-size:18px}
+
+  .bottom-actions{display:none;position:fixed;bottom:56px;left:0;right:0;
+    background:var(--color-bg-2);border-top:1px solid var(--color-border);
+    padding:10px 14px;gap:10px;z-index:99}
+  .bottom-actions.show{display:flex}
+  .bottom-actions .btn{flex:1}
+}
+@media (min-width:769px){.mobile-nav{display:none}}
+</style>
+</head>
+<body>
+
+<!-- 登录 / 首次初始化 -->
+<div class="gate" id="gate" style="display:none;">
+  <div class="gate-box">
+    <div class="gate-logo">📖</div>
+    <h2 id="gateTitle">超星刷课助手</h2>
+    <div class="gate-sub" id="gateSub">请登录你的账号</div>
+    <div class="form-item">
+      <input type="text" class="input" id="loginUser" placeholder="用户名" autocomplete="username">
+    </div>
+    <div class="form-item">
+      <input type="password" class="input" id="loginPass" placeholder="密码" autocomplete="current-password">
+    </div>
+    <div class="form-item" id="gatePass2Wrap" style="display:none;">
+      <input type="password" class="input" id="loginPass2" placeholder="再输一次密码" autocomplete="new-password">
+    </div>
+    <button class="btn btn-primary btn-block btn-lg" id="gateBtn" onclick="doLogin()">登录</button>
+    <div id="gateMsg" style="color:rgb(var(--danger-6));font-size:13px;margin-top:12px;text-align:center;min-height:20px;"></div>
+  </div>
+</div>
+
+<div class="app-layout" id="appLayout" style="display:none;">
+
+  <aside class="app-sider">
+    <div class="sider-logo">
+      <div class="logo-mark">📖</div>
+      <div class="logo-text">超星刷课助手</div>
+    </div>
+    <nav class="sider-menu">
+      <div class="menu-item active" data-page="dashboard" onclick="switchPage('dashboard')"><span class="mi-icon">📊</span><span>控制面板</span></div>
+      <div class="menu-item" data-page="courses" onclick="switchPage('courses')"><span class="mi-icon">📚</span><span>我的课程</span></div>
+      <div class="menu-item" data-page="task" onclick="switchPage('task')"><span class="mi-icon">▶️</span><span>任务执行</span></div>
+      <div class="menu-item" data-page="settings" onclick="switchPage('settings')"><span class="mi-icon">⚙️</span><span>设置</span></div>
+    </nav>
+  </aside>
+
+  <div class="app-main">
+    <header class="app-header">
+      <div class="header-left">
+        <span class="header-title" id="pageTitle">控制面板</span>
+        <span id="statusBadge" class="tag tag-gray">待机</span>
+      </div>
+      <div class="header-right">
+        <div class="header-user" onclick="switchPage('settings')">
+          <span>👤</span><span class="hu-name" id="ownerName">-</span>
+        </div>
+      </div>
+    </header>
+
+    <main class="app-content">
+      <div class="content-inner">
+
+        <!-- ========== 控制面板 ========== -->
+        <div class="page active" id="page-dashboard">
+          <div class="page-head">
+            <div class="page-head__main">
+              <h2 class="page-head__title" id="welcomeTitle">控制面板</h2>
+              <p class="page-head__desc" id="welcomeDesc">任务在服务器后台运行，关闭浏览器不影响</p>
+            </div>
+            <div class="page-head__extra">
+              <button class="btn btn-primary btn-sm" onclick="switchPage('courses')">去刷课</button>
+            </div>
+          </div>
+
+          <div class="stat-row">
+            <div class="stat-card">
+              <div class="stat-card__icon" style="background:rgba(var(--primary-6),.12);color:rgb(var(--primary-6))">🎓</div>
+              <div class="stat-card__body">
+                <div class="stat-card__label">超星账号</div>
+                <div class="stat-card__value" id="statAccount" style="font-size:18px">未绑定</div>
+                <div class="stat-card__sub" id="statAccountSub">点击下方绑定</div>
+              </div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-card__icon" style="background:rgba(var(--success-6),.12);color:rgb(var(--success-6))">📚</div>
+              <div class="stat-card__body">
+                <div class="stat-card__label">已绑定课程</div>
+                <div class="stat-card__value" id="statCourses">0<span class="stat-card__unit">门</span></div>
+                <div class="stat-card__sub">可随时重新同步</div>
+              </div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-card__icon" style="background:rgba(var(--warning-6),.12);color:rgb(var(--warning-6))">📡</div>
+              <div class="stat-card__body">
+                <div class="stat-card__label">任务状态</div>
+                <div class="stat-card__value" id="statStatus" style="font-size:18px">空闲</div>
+                <div class="stat-card__sub" id="statStatusSub">暂无任务</div>
+              </div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-card__icon" style="background:rgba(139,92,246,.12);color:#8B5CF6">📝</div>
+              <div class="stat-card__body">
+                <div class="stat-card__label">日志条数</div>
+                <div class="stat-card__value" id="statLogs">0</div>
+                <div class="stat-card__sub">本次任务</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 超星账号绑定 -->
+          <div class="card-soft card" id="accountCard">
+            <div class="card-title"><span>🎓</span> 超星账号
+              <span class="ct-right" id="accTag"></span>
+            </div>
+            <div id="accBound" style="display:none;">
+              <div class="course-line">
+                <div class="course-name" id="accName">-</div>
+                <div class="meta" id="accMeta"></div>
+              </div>
+              <div class="btn-group" style="margin-top:var(--sp-4);">
+                <button class="btn btn-outline btn-sm" onclick="showBindForm()">更换账号</button>
+                <button class="btn btn-outline btn-sm" onclick="unbindAccount()">解绑</button>
+              </div>
+            </div>
+            <div id="accUnbound">
+              <div class="message" style="margin-top:0;margin-bottom:var(--sp-4);">
+                绑定超星学习通账号后即可获取课程并执行任务。密码保存在你自己的服务器上。
+              </div>
+              <div class="form-item">
+                <label class="form-label">手机号 / 账号<span class="req">*</span></label>
+                <input type="text" class="input" id="bindUser" placeholder="请输入超星账号" autocomplete="off">
+              </div>
+              <div class="form-item">
+                <label class="form-label">密码<span class="req">*</span></label>
+                <input type="password" class="input" id="bindPass" placeholder="请输入超星密码" autocomplete="off">
+              </div>
+              <button class="btn btn-primary btn-block" id="bindBtn" onclick="bindAccount()">绑定账号</button>
+            </div>
+          </div>
+
+          <!-- 任务状态 -->
+          <div class="card-soft card" id="currentCard" style="display:none;">
+            <div class="card-title"><span>📡</span> 任务状态
+              <span class="ct-right" id="curTaskId"></span>
+            </div>
+            <div class="course-line">
+              <div class="course-name" id="curCourse">-</div>
+              <div class="meta" id="curMeta"></div>
+            </div>
+            <div class="message" id="curRunning"></div>
+            <div class="counts" id="curCounts"></div>
+
+            <div class="task-items" id="curItems" style="display:none;">
+              <div class="task-items__head">
+                <span class="ti-title">任务点</span>
+                <span class="ti-legend">
+                  <span class="dot success"></span>已完成
+                  <span class="dot running" style="margin-left:8px"></span>进行中
+                  <span class="dot failed" style="margin-left:8px"></span>失败
+                </span>
+              </div>
+              <div class="task-items__list" id="curItemsList"></div>
+            </div>
+
+            <div class="btn-group" style="margin-top:var(--sp-4);">
+              <button class="btn btn-warning" id="pauseBtn" onclick="pauseTask()" disabled>⏸ 暂停</button>
+              <button class="btn btn-danger" id="stopBtn" onclick="stopCurrent()" disabled>⏹ 停止任务</button>
+              <span class="meta" id="btnHint" style="align-self:center;">（有任务在运行时可用）</span>
+            </div>
+          </div>
+
+          <!-- 使用指引 -->
+          <div class="card-soft card" id="guideCard">
+            <div class="card-title"><span>💡</span> 使用指引</div>
+            <div class="guide-step">
+              <div class="guide-num">1</div>
+              <div class="guide-body">
+                <div class="guide-t">绑定超星账号</div>
+                <div class="guide-d">使用学习通手机号和密码登录，绑定后自动同步课程</div>
+              </div>
+            </div>
+            <div class="guide-step">
+              <div class="guide-num">2</div>
+              <div class="guide-body">
+                <div class="guide-t">选择课程开始刷课</div>
+                <div class="guide-d">在「我的课程」勾选要刷的课程，点开始即可</div>
+              </div>
+            </div>
+            <div class="guide-step">
+              <div class="guide-num">3</div>
+              <div class="guide-body">
+                <div class="guide-t">随时暂停或停止</div>
+                <div class="guide-d">任务运行时可暂停/继续，也可随时停止，已完成的任务点不受影响</div>
+              </div>
+            </div>
+            <div class="btn-group" style="margin-top:var(--sp-4);">
+              <button class="btn btn-primary btn-sm" onclick="switchPage('courses')">前往我的课程</button>
+            </div>
+          </div>
+
+          <!-- 日志 -->
+          <div class="card-soft card">
+            <div class="card-title"><span>📋</span> 运行日志
+              <span class="ct-right" id="logCount">0 条</span>
+            </div>
+            <div class="log-box" id="logConsole">
+              <div class="log-empty">暂无日志</div>
+            </div>
+            <div style="margin-top:var(--sp-3);">
+              <button class="btn btn-outline btn-sm" onclick="scrollLogBottom()">↓ 滚动到底部</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- ========== 我的课程 ========== -->
+        <div class="page" id="page-courses">
+          <div class="page-head">
+            <div class="page-head__main">
+              <h2 class="page-head__title">我的课程</h2>
+              <p class="page-head__desc">勾选要刷的课程，然后开始</p>
+            </div>
+            <div class="page-head__extra">
+              <button class="btn btn-outline btn-sm" onclick="syncCourses()">重新同步</button>
+            </div>
+          </div>
+
+          <div class="card-soft card" id="courseCard">
+            <div class="card-title"><span>📖</span> 课程列表
+              <span class="ct-right" id="courseCount"></span>
+            </div>
+            <div id="courseList"><div class="empty"><div class="empty-icon">🔗</div>请先在控制面板绑定超星账号</div></div>
+            <div class="form-hint" style="margin-top:var(--sp-3);color:var(--color-warning);">⚠️ 一次只能选一门课程（防出错），点另一门会自动切换</div>
+            <div class="btn-group" style="margin-top:var(--sp-2);">
+              <button class="btn btn-outline btn-sm" onclick="selectAll(false)">取消选择</button>
+            </div>
+          </div>
+
+          <div class="card-soft card">
+            <button class="btn btn-success btn-block btn-lg" id="startBtn" onclick="startTask()">▶ 开始刷课</button>
+            <div class="form-hint" style="text-align:center;">任务在服务器后台运行，可随时关闭浏览器</div>
+          </div>
+
+          <div class="card-soft card">
+            <div class="card-title"><span>🕘</span> 任务历史
+              <span class="ct-right" onclick="clearHistory()" style="cursor:pointer;color:rgb(var(--danger-6))">清空</span>
+            </div>
+            <div id="historyList"><div class="empty"><div class="empty-icon">📭</div>暂无历史记录</div></div>
+          </div>
+        </div>
+
+        <!-- ========== 任务执行 ========== -->
+        <div class="page" id="page-task">
+          <div class="page-head">
+            <div class="page-head__main">
+              <h2 class="page-head__title">任务执行</h2>
+              <p class="page-head__desc">调整刷课参数，高级选项可展开配置</p>
+            </div>
+          </div>
+
+          <div class="card-soft card">
+            <div class="card-title"><span>⚙️</span> 运行设置</div>
+            <div class="form-row">
+              <div class="form-item">
+                <label class="form-label">视频倍速</label>
+                <select class="select" id="speed">
+                  <option value="1" selected>1.0x（安全）</option>
+                  <option value="1.25">1.25x</option>
+                  <option value="1.5">1.5x</option>
+                  <option value="1.75">1.75x</option>
+                  <option value="2">2.0x（最快）</option>
+                </select>
+              </div>
+              <div class="form-item">
+                <label class="form-label">并发章节数</label>
+                <select class="select" id="jobs">
+                  <option value="1">1（最稳）</option>
+                  <option value="2">2</option>
+                  <option value="4" selected>4（默认）</option>
+                  <option value="6">6</option>
+                  <option value="8">8</option>
+                </select>
+              </div>
+            </div>
+            <div class="form-item">
+              <label class="form-label">关闭章节处理</label>
+              <select class="select" id="notopenAction">
+                <option value="continue" selected>自动跳过（默认）</option>
+                <option value="retry">重试</option>
+                <option value="ask">询问</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="card-soft card">
+            <div class="coll-head" onclick="toggleColl('tikuBody')">
+              <span>🧠 题库配置（高级）</span><span class="coll-arrow" id="tikuArrow">▶</span>
+            </div>
+            <div class="coll-body" id="tikuBody">
+              <div class="form-item">
+                <label class="form-label">题库来源</label>
+                <select class="select" id="tikuProvider" onchange="onProvider()">
+                  <option value="" selected>不使用题库（默认）</option>
+                  <option value="TikuYanxi">言溪题库</option>
+                  <option value="TikuLike">LIKE知识库</option>
+                  <option value="TikuAdapter">TikuAdapter</option>
+                  <option value="TikuGo">GO题</option>
+                  <option value="AI">AI大模型</option>
+                  <option value="SiliconFlow">硅基流动AI</option>
+                  <option value="TikuManual">手动输入</option>
+                </select>
+              </div>
+              <div class="form-item" id="gToken"><label class="form-label">题库 Token</label><input class="input" id="tikuTokens" placeholder="言溪/LIKE/GO题 的 Token"></div>
+              <div id="gAI" style="display:none;">
+                <div class="form-item"><label class="form-label">AI Endpoint</label><input class="input" id="aiEndpoint" placeholder="https://api.openai.com/v1"></div>
+                <div class="form-item"><label class="form-label">AI Key</label><input class="input" id="aiKey" placeholder="sk-..."></div>
+                <div class="form-item"><label class="form-label">AI 模型</label><input class="input" id="aiModel" placeholder="gpt-4o-mini"></div>
+              </div>
+              <div id="gSF" style="display:none;">
+                <div class="form-item"><label class="form-label">SiliconFlow Key</label><input class="input" id="siliconflowKey" placeholder="sk-..."></div>
+                <div class="form-item"><label class="form-label">模型</label><input class="input" id="siliconflowModel" value="deepseek-ai/DeepSeek-R1"></div>
+              </div>
+              <div id="gAD" style="display:none;">
+                <div class="form-item"><label class="form-label">TikuAdapter URL</label><input class="input" id="tikuAdapterUrl" placeholder="http://localhost:6789"></div>
+              </div>
+              <div class="switch-row">
+                <span class="sr-label">自动提交答案（不保证正确率）</span>
+                <div class="switch" id="submitToggle" onclick="toggleSubmit()"></div>
+              </div>
+            </div>
+
+            <div class="coll-head" onclick="toggleColl('notifyBody')">
+              <span>📢 通知配置（可选）</span><span class="coll-arrow" id="notifyArrow">▶</span>
+            </div>
+            <div class="coll-body" id="notifyBody">
+              <div class="form-item">
+                <label class="form-label">通知方式</label>
+                <select class="select" id="notifyProvider">
+                  <option value="">不通知</option>
+                  <option value="ServerChan">Server酱</option>
+                  <option value="Qmsg">Qmsg酱</option>
+                  <option value="Bark">Bark</option>
+                  <option value="Telegram">Telegram</option>
+                </select>
+              </div>
+              <div class="form-item"><label class="form-label">通知 URL</label><input class="input" id="notifyUrl" placeholder="https://sctapi.ftqq.com/****.send"></div>
+            </div>
+          </div>
+
+          <div class="card-soft card">
+            <button class="btn btn-success btn-block btn-lg" onclick="switchPage('courses')">去「我的课程」选择课程开始</button>
+          </div>
+        </div>
+
+        <!-- ========== 设置 ========== -->
+        <div class="page" id="page-settings">
+          <div class="page-head">
+            <div class="page-head__main">
+              <h2 class="page-head__title">设置</h2>
+              <p class="page-head__desc">身份与数据管理</p>
+            </div>
+          </div>
+
+          <div class="card-soft card">
+            <div class="card-title"><span>👤</span> 当前账号</div>
+            <div style="display:flex;align-items:center;justify-content:space-between;">
+              <div>
+                <div style="font-size:15px;font-weight:600;" id="settingsOwner">-</div>
+                <div class="form-hint" style="margin-top:4px;">身份：<span id="settingsRole">普通成员</span></div>
+              </div>
+              <button class="btn btn-outline btn-sm" onclick="logout()">退出登录</button>
+            </div>
+          </div>
+
+          <div class="card-soft card">
+            <div class="card-title"><span>🔑</span> 修改密码</div>
+            <div class="form-item">
+              <label class="form-label">原密码</label>
+              <input type="password" class="input" id="pwdOld" autocomplete="current-password">
+            </div>
+            <div class="form-row">
+              <div class="form-item">
+                <label class="form-label">新密码</label>
+                <input type="password" class="input" id="pwdNew" autocomplete="new-password">
+              </div>
+              <div class="form-item">
+                <label class="form-label">确认新密码</label>
+                <input type="password" class="input" id="pwdNew2" autocomplete="new-password">
+              </div>
+            </div>
+            <button class="btn btn-primary btn-sm" id="pwdBtn" onclick="changePassword()">保存新密码</button>
+          </div>
+
+          <!-- 成员管理（仅管理员可见） -->
+          <div class="card-soft card" id="adminCard" style="display:none;">
+            <div class="card-title"><span>👥</span> 成员管理
+              <span class="ct-right" id="adminUserCount"></span>
+            </div>
+            <div style="border:1px solid var(--color-border);border-radius:var(--radius-sm);padding:var(--sp-3);margin-bottom:var(--sp-4);">
+              <div class="form-row">
+                <div class="form-item" style="margin-bottom:var(--sp-2);">
+                  <label class="form-label">成员用户名</label>
+                  <input type="text" class="input" id="newUserName" placeholder="如 xiaoming" autocomplete="off">
+                </div>
+                <div class="form-item" style="margin-bottom:var(--sp-2);">
+                  <label class="form-label">初始密码</label>
+                  <input type="text" class="input" id="newUserPass" placeholder="至少 6 位" autocomplete="off">
+                </div>
+              </div>
+              <button class="btn btn-primary btn-sm" id="newUserBtn" onclick="createMember()">添加成员</button>
+              <div class="form-hint">成员用这个用户名 + 密码登录，登录后自己绑定学习通账号。</div>
+            </div>
+            <div class="form-item">
+              <label class="form-label">批量添加（每行一个：用户名 密码）</label>
+              <textarea class="input" id="batchUsers" rows="3"
+                        style="height:auto;padding:8px 12px;line-height:1.9;font-family:inherit;"
+                        placeholder="xiaoming 123456&#10;xiaohong abc12345"></textarea>
+            </div>
+            <button class="btn btn-outline btn-sm" id="batchBtn" onclick="createMembersBatch()">批量添加</button>
+            <div id="memberList" style="margin-top:var(--sp-4);"><div class="empty">加载中…</div></div>
+          </div>
+
+          <div class="card-soft card">
+            <div class="card-title"><span>🎓</span> 超星账号</div>
+            <div id="settingsAcc" class="message" style="margin-top:0;">未绑定</div>
+            <div class="btn-group" style="margin-top:var(--sp-4);">
+              <button class="btn btn-outline btn-sm" onclick="switchPage('dashboard')">去绑定</button>
+            </div>
+          </div>
+
+          <div class="card-soft card">
+            <div class="card-title"><span>ℹ️</span> 关于</div>
+            <div class="message" style="margin-top:0;line-height:2;">
+              超星刷课助手 · 自建版<br>
+              基于开源项目 Samueli924/chaoxing<br>
+              任务在服务器后台运行，关闭浏览器不影响
+            </div>
+          </div>
+
+          <div class="card-soft card">
+            <div class="card-title"><span>🗑</span> 数据管理</div>
+            <button class="btn btn-outline btn-block" onclick="clearHistory()">清空我的任务历史</button>
+            <div class="form-hint">只会清空你自己的任务记录，不影响其他人。</div>
+          </div>
+        </div>
+
+      </div>
+    </main>
+  </div>
+</div>
+
+<div class="mobile-nav" id="mobileNav" style="display:none;">
+  <div class="mn-item active" data-page="dashboard" onclick="switchPage('dashboard')"><span class="mn-icon">📊</span><span>面板</span></div>
+  <div class="mn-item" data-page="courses" onclick="switchPage('courses')"><span class="mn-icon">📚</span><span>课程</span></div>
+  <div class="mn-item" data-page="task" onclick="switchPage('task')"><span class="mn-icon">⚙️</span><span>设置项</span></div>
+  <div class="mn-item" data-page="settings" onclick="switchPage('settings')"><span class="mn-icon">👤</span><span>我的</span></div>
+</div>
+
+<div class="bottom-actions" id="bottomActions">
+  <button class="btn btn-warning" id="pauseBtnM" onclick="pauseTask()">⏸ 暂停</button>
+  <button class="btn btn-danger" id="stopBtnM" onclick="stopCurrent()">⏹ 停止</button>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ============================================================
+// 全局
+// ============================================================
+let selected = new Set();
+let autoSubmit = false;
+let currentTaskId = null;
+let lastLogId = 0;
+let logCount = 0;
+let eventSource = null;
+let boundCourses = [];
+let progressTimer = null;
+let lastEndedTaskId = null;
+let currentStreamTaskId = null;
+
+let ME = null;            // 当前登录用户 {username, role}
+let isSetupMode = false;  // 首次初始化（创建管理员）模式
+
+// 登录态走 HttpOnly Cookie，同源请求会自动带上，不用再拼 owner 参数
+function api(path) { return path; }
+function fapi(path, opts) { return fetch(api(path), opts); }
+
+const PAGE_TITLES = { dashboard:'控制面板', courses:'我的课程', task:'任务执行', settings:'设置' };
+
+function switchPage(name) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  const el = document.getElementById('page-' + name);
+  if (el) el.classList.add('active');
+  document.querySelectorAll('.menu-item, .mn-item').forEach(m =>
+    m.classList.toggle('active', m.dataset.page === name));
+  document.getElementById('pageTitle').textContent = PAGE_TITLES[name] || '';
+  document.querySelector('.app-content').scrollTop = 0;
+  if (name === 'courses') { loadHistory(); renderCourses(boundCourses); }
+  if (name === 'settings') { loadMembers(); }
+}
+
+function toast(msg, type='') {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.className = 'toast show ' + type;
+  clearTimeout(t._t); t._t = setTimeout(() => t.classList.remove('show'), 2800);
+}
+function esc(s) { const d = document.createElement('div'); d.textContent = s == null ? '' : s; return d.innerHTML; }
+function fmtTime(ts) {
+  if (!ts) return '--';
+  const d = new Date(ts * 1000), p = n => String(n).padStart(2,'0');
+  return `${d.getMonth()+1}/${d.getDate()} ${p(d.getHours())}:${p(d.getMinutes())}`;
+}
+function statusText(s){return {idle:'空闲',pending:'启动中',running:'运行中',finished:'已完成',error:'出错',stopped:'已停止',interrupted:'已中断'}[s]||s;}
+function statusTag(s){return {running:'tag-blue',pending:'tag-blue',finished:'tag-green',error:'tag-red',stopped:'tag-orange',interrupted:'tag-orange'}[s]||'tag-gray';}
+
+// ============================================================
+// 启动 / 登录
+// ============================================================
+window.addEventListener('DOMContentLoaded', async () => {
+  ['loginUser','loginPass','loginPass2'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.addEventListener('keydown', e => { if (e.key === 'Enter') doLogin(); });
+  });
+
+  // 已登录 → 直接进；否则判断是不是「系统还没有任何账号」
+  try {
+    const r = await fetch('/api/auth/me');
+    if (r.ok) {
+      const d = await r.json();
+      ME = d.user || null;
+      if (ME) { enterApp(); return; }
+    }
+  } catch(e) {}
+
+  let needSetup = false;
+  try {
+    const r = await fetch('/api/setup/status');
+    needSetup = !!(await r.json()).need_setup;
+  } catch(e) {}
+  showGate(needSetup);
+});
+
+function showGate(setup) {
+  isSetupMode = !!setup;
+  document.getElementById('gate').style.display = 'flex';
+  document.getElementById('gateTitle').textContent = isSetupMode ? '首次使用 · 创建管理员' : '超星刷课助手';
+  document.getElementById('gateSub').textContent = isSetupMode
+    ? '系统还没有任何账号，请先创建一个管理员账号'
+    : '请登录你的账号';
+  document.getElementById('gateBtn').textContent = isSetupMode ? '创建并进入' : '登录';
+  document.getElementById('gatePass2Wrap').style.display = isSetupMode ? 'block' : 'none';
+  document.getElementById('loginPass').setAttribute('autocomplete', isSetupMode ? 'new-password' : 'current-password');
+  document.getElementById('gateMsg').textContent = '';
+  setTimeout(() => document.getElementById('loginUser').focus(), 200);
+}
+
+async function doLogin() {
+  const username = (document.getElementById('loginUser').value || '').trim();
+  const password = document.getElementById('loginPass').value || '';
+  const msg = document.getElementById('gateMsg');
+  const btn = document.getElementById('gateBtn');
+  if (!username || !password) { msg.textContent = '请输入用户名和密码'; return; }
+  if (isSetupMode) {
+    const p2 = document.getElementById('loginPass2').value || '';
+    if (password.length < 6) { msg.textContent = '密码至少 6 位'; return; }
+    if (password !== p2) { msg.textContent = '两次输入的密码不一致'; return; }
+  }
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spin"></span> 处理中...';
+  try {
+    const url = isSetupMode ? '/api/setup' : '/api/auth/login';
+    const r = await fetch(url, {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({username, password})
+    });
+    const d = await r.json();
+    if (d.success) {
+      try {
+        const me = await fetch('/api/auth/me');
+        if (me.ok) ME = (await me.json()).user;
+      } catch(e) {}
+      document.getElementById('gate').style.display = 'none';
+      msg.textContent = '';
+      enterApp();
+    } else {
+      msg.textContent = d.message || '登录失败';
+    }
+  } catch(e) { msg.textContent = '网络错误：' + e.message; }
+  finally {
+    btn.disabled = false;
+    btn.textContent = isSetupMode ? '创建并进入' : '登录';
+  }
+}
+
+async function logout() {
+  if (!confirm('确定退出登录吗？')) return;
+  try { await fetch('/api/auth/logout', { method:'POST' }); } catch(e) {}
+  ME = null;
+  location.reload();
+}
+
+async function enterApp() {
+  document.getElementById('appLayout').style.display = 'flex';
+  if (window.innerWidth <= 768) document.getElementById('mobileNav').style.display = 'flex';
+  const name = ME ? ME.username : '';
+  document.getElementById('ownerName').textContent = name;
+  document.getElementById('settingsOwner').textContent = name;
+  document.getElementById('settingsRole').textContent = (ME && ME.role === 'admin') ? '管理员' : '普通成员';
+  if (ME && ME.role === 'admin') document.getElementById('adminCard').style.display = 'block';
+  await loadAccount();
+  await refreshCurrent();
+  await loadHistory();
+}
+
+// ============================================================
+// 超星账号绑定
+// ============================================================
+async function loadAccount() {
+  try {
+    const r = await fapi('/api/account');
+    const d = await r.json();
+    if (!d.success) return;
+    boundCourses = d.courses || [];
+    const bound = d.bound;
+    document.getElementById('accBound').style.display = bound ? 'block' : 'none';
+    document.getElementById('accUnbound').style.display = bound ? 'none' : 'block';
+    document.getElementById('accTag').innerHTML = bound
+      ? '<span class="tag tag-green">已绑定</span>'
+      : '<span class="tag tag-gray">未绑定</span>';
+
+    document.getElementById('statAccount').textContent = bound ? '已绑定' : '未绑定';
+    document.getElementById('statAccountSub').textContent = bound
+      ? (d.account.realname || d.account.username) : '点击下方绑定';
+    document.getElementById('statCourses').innerHTML = boundCourses.length + '<span class="stat-card__unit">门</span>';
+
+    if (bound) {
+      document.getElementById('accName').textContent = d.account.realname || d.account.username;
+      document.getElementById('accMeta').textContent = '账号 ' + d.account.username;
+      document.getElementById('settingsAcc').textContent = '已绑定：' + (d.account.realname || d.account.username);
+    } else {
+      document.getElementById('settingsAcc').textContent = '未绑定';
+    }
+    renderCourses(boundCourses);
+  } catch(e) { console.error(e); }
+}
+
+function showBindForm() {
+  document.getElementById('accBound').style.display = 'none';
+  document.getElementById('accUnbound').style.display = 'block';
+}
+
+async function bindAccount() {
+  const username = document.getElementById('bindUser').value.trim();
+  const password = document.getElementById('bindPass').value.trim();
+  if (!username || !password) { toast('请输入账号和密码', 'error'); return; }
+  const btn = document.getElementById('bindBtn');
+  btn.disabled = true; btn.innerHTML = '<span class="spin"></span> 绑定中...';
+  try {
+    const r = await fapi('/api/account/bind', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({username, password})
+    });
+    const d = await r.json();
+    if (d.success) {
+      toast('绑定成功' + (d.realname ? '，' + d.realname : ''), 'success');
+      selected.clear();
+      await loadAccount();
+      switchPage('courses');
+    } else { toast(d.message, 'error'); }
+  } catch(e) { toast('网络错误：' + e.message, 'error'); }
+  finally { btn.disabled = false; btn.textContent = '绑定账号'; }
+}
+
+async function unbindAccount() {
+  if (!confirm('解绑后将删除保存的超星密码，确定解绑吗？')) return;
+  const r = await fapi('/api/account/unbind', {method:'POST'});
+  const d = await r.json();
+  toast(d.message, d.success ? 'success' : 'error');
+  await loadAccount();
+}
+
+async function syncCourses() {
+  if (!document.getElementById('accBound') || document.getElementById('accBound').style.display === 'none') {
+    toast('请先绑定超星账号', 'error'); switchPage('dashboard'); return;
+  }
+  toast('正在同步课程...');
+  const r = await fapi('/api/account');
+  const d = await r.json();
+  boundCourses = d.courses || [];
+  renderCourses(boundCourses);
+  toast('已同步 ' + boundCourses.length + ' 门课程', 'success');
+}
+
+// ============================================================
+// 课程列表
+// ============================================================
+function renderCourses(courses, resetSel) {
+  const list = document.getElementById('courseList');
+  const cnt = document.getElementById('courseCount');
+  if (resetSel) selected.clear();
+  if (!courses || !courses.length) {
+    list.innerHTML = '<div class="empty"><div class="empty-icon">🔗</div>请先在控制面板绑定超星账号</div>';
+    if (cnt) cnt.textContent = '';
+    return;
+  }
+  if (cnt) cnt.textContent = `共 ${courses.length} 门`;
+  list.innerHTML = courses.map(c => `
+    <div class="course-item" data-id="${esc(c.courseId)}" onclick="toggleCourse(this)">
+      <div class="cbox"></div>
+      <div class="course-info">
+        <div class="course-name-sm">${esc(c.title)}</div>
+        <div class="course-meta">ID: ${esc(c.courseId)} · 班级: ${esc(c.clazzId)}</div>
+      </div>
+    </div>`).join('');
+  // 重新渲染后恢复之前勾选的状态（避免被后台刷新清空）
+  document.querySelectorAll('.course-item').forEach(el => {
+    if (selected.has(el.dataset.id)) el.classList.add('selected');
+  });
+}
+function toggleCourse(el) {
+  const id = el.dataset.id;
+  const wasSelected = el.classList.contains('selected');
+  if (wasSelected) {
+    // 再点一次 = 取消
+    el.classList.remove('selected');
+    selected.delete(id);
+    return;
+  }
+  // 单选：清掉其它所有勾选，只保留当前这门
+  document.querySelectorAll('.course-item').forEach(o => o.classList.remove('selected'));
+  selected.clear();
+  el.classList.add('selected');
+  selected.add(id);
+}
+function selectAll(all) {
+  // 只支持取消选择；不再支持全选（一次只能刷一门）
+  if (all) return;
+  document.querySelectorAll('.course-item').forEach(el => el.classList.remove('selected'));
+  selected.clear();
+}
+
+// ============================================================
+// 状态刷新
+// ============================================================
+// 统一控制「暂停 / 停止」按钮：
+// 桌面端常显（没有任务在跑时灰掉），手机端底部浮条只在任务运行时出现。
+// 注意：以前每个地方各写一遍显隐逻辑，任务从「排队中」变成「运行中」时没人更新，
+// 于是必须刷新页面按钮才出来 —— 现在统一走这个函数，并由定时器兜底同步。
+function updateTaskButtons(running, paused) {
+  running = !!running;
+  paused = !!paused;
+  const pb = document.getElementById('pauseBtn');
+  const sb = document.getElementById('stopBtn');
+  const pbm = document.getElementById('pauseBtnM');
+  const sbm = document.getElementById('stopBtnM');
+  const ba = document.getElementById('bottomActions');
+  const hint = document.getElementById('btnHint');
+  if (pb) { pb.style.display = 'inline-flex'; pb.disabled = !running; }
+  if (sb) { sb.style.display = 'inline-flex'; sb.disabled = !running; }
+  if (hint) hint.textContent = running ? (paused ? '已暂停，点「继续」接着跑' : '') : '（有任务在运行时可用）';
+  if (ba) ba.classList.toggle('show', running);
+  if (pbm) pbm.style.display = running ? 'inline-flex' : 'none';
+  if (sbm) sbm.style.display = running ? 'inline-flex' : 'none';
+  [pb, pbm].forEach(b => {
+    if (!b) return;
+    b.textContent = paused ? '▶ 继续' : '⏸ 暂停';
+    b.className = 'btn ' + (paused ? 'btn-success' : 'btn-warning');
+    b.dataset.paused = paused ? '1' : '0';
+  });
+}
+
+async function refreshCurrent() {
+  try {
+    const r = await fapi('/api/current');
+    const d = await r.json();
+    if (!d.has_task) { renderStatus('idle', false); return; }
+    const t = d.task;
+    currentTaskId = t.id;
+    renderStatus(t.status, t.is_alive, t.paused);
+
+    document.getElementById('currentCard').style.display = 'block';
+    document.getElementById('guideCard').style.display = 'none';
+    document.getElementById('curTaskId').textContent = '#' + t.id;
+    document.getElementById('curCourse').textContent = '任务 #' + t.id;
+    document.getElementById('curMeta').textContent =
+      '开始于 ' + fmtTime(t.start_time) + (t.end_time ? ' · 结束于 ' + fmtTime(t.end_time) : '');
+    document.getElementById('curRunning').textContent = '账号：' + (t.username || '-');
+
+    const running = (t.status === 'running' && t.is_alive);
+    updateTaskButtons(running, t.paused);
+
+    if (running) {
+      startProgress(t.id);
+    } else {
+      stopProgress();
+      loadProgress(t.id);
+    }
+
+    await loadLogs(t.id, true);
+    openStream(t.id);
+  } catch(e) { console.error(e); }
+}
+
+// 轻量同步：只刷新状态与暂停/停止按钮，不重建课程列表（防止清空勾选）
+async function renderStatusFromApi() {
+  try {
+    const r = await fapi('/api/current');
+    const d = await r.json();
+    if (!d.has_task) return;
+    const t = d.task;
+    if (t.id !== currentTaskId) return;
+    renderStatus(t.status, t.is_alive, t.paused);
+    updateTaskButtons((t.status === 'running' && t.is_alive), t.paused);
+  } catch(e) {}
+}
+
+function renderStatus(status, alive, paused) {
+  const b = document.getElementById('statusBadge');
+  const s = document.getElementById('statStatus');
+  const ss = document.getElementById('statStatusSub');
+  if (paused && status === 'running') {
+    b.className = 'tag tag-orange'; b.textContent = '已暂停';
+    s.textContent = '已暂停'; ss.textContent = '任务已挂起';
+    return;
+  }
+  b.className = 'tag ' + statusTag(status);
+  b.textContent = statusText(status) + (status === 'running' && alive ? ' ●' : '');
+  s.textContent = statusText(status);
+  ss.textContent = (status === 'running' && alive) ? '后台运行中' : (status === 'idle' ? '暂无任务' : '');
+}
+
+// ============================================================
+// 进度
+// ============================================================
+async function loadProgress(taskId) {
+  try {
+    const r = await fapi(`/api/progress?task_id=${taskId}`);
+    const d = await r.json();
+    if (!d.success) return;
+    const st = d.stats || {};
+    const totalTxt = st.total_points ? st.total_points : (st.success || 0) + (st.failed || 0);
+    document.getElementById('curCounts').innerHTML =
+      `任务点 <b>${totalTxt}</b> · ` +
+      `本次成功 <b class="ok">${st.success || 0}</b> · ` +
+      `失败 <b class="fail">${st.failed || 0}</b>`;
+    if (d.current_chapter) {
+      document.getElementById('curRunning').textContent = '正在执行：' + d.current_chapter;
+    }
+  } catch(e) {}
+}
+function startProgress(taskId) {
+  stopProgress();
+  loadProgress(taskId);
+  progressTimer = setInterval(() => loadProgress(taskId), 5000);
+}
+function stopProgress() { if (progressTimer) { clearInterval(progressTimer); progressTimer = null; } }
+
+// ============================================================
+// 日志
+// ============================================================
+const MAX_LOG_LINES = 300, MAX_MSG_LEN = 300;
+
+async function loadLogs(taskId, reset) {
+  if (reset) { lastLogId = 0; logCount = 0; document.getElementById('logConsole').innerHTML = ''; }
+  const url = reset ? `/api/logs?task_id=${taskId}&tail=200` : `/api/logs?task_id=${taskId}&after=${lastLogId}`;
+  const r = await fapi(url);
+  const d = await r.json();
+  d.logs.forEach(appendLog);
+  if (d.last_id) lastLogId = d.last_id;
+}
+
+function appendLog(log) {
+  const el = document.getElementById('logConsole');
+  if (logCount === 0) el.innerHTML = '';
+  let cls = log.level || 'info';
+  if ((log.msg||'').includes('[系统]')) cls = 'sys';
+  let msg = log.msg || '';
+  if (msg.length > MAX_MSG_LEN) msg = msg.slice(0, MAX_MSG_LEN) + ' …';
+  const div = document.createElement('div');
+  div.className = 'log-line';
+  div.innerHTML = `<span class="log-time">${esc(log.time)}</span><span class="log-msg ${cls}">${esc(msg)}</span>`;
+  el.appendChild(div);
+  while (el.childElementCount > MAX_LOG_LINES) el.removeChild(el.firstChild);
+  logCount++;
+  const lc = document.getElementById('logCount'); if (lc) lc.textContent = logCount + ' 条';
+  const sl = document.getElementById('statLogs'); if (sl) sl.textContent = logCount;
+  el.scrollTop = el.scrollHeight;
+}
+function scrollLogBottom() { const el = document.getElementById('logConsole'); el.scrollTop = el.scrollHeight; }
+
+function openStream(taskId) {
+  if (eventSource && currentStreamTaskId === taskId && eventSource.readyState === 1) return;
+  if (eventSource) eventSource.close();
+  currentStreamTaskId = taskId;
+  eventSource = new EventSource(api(`/api/logs/stream?task_id=${taskId}`));
+  // SSE 连上后立刻同步一次真实状态，避免「打开页面时按钮没出现、刷新才有」
+  eventSource.onopen = () => { renderStatusFromApi(); };
+  eventSource.onmessage = (ev) => {
+    const d = JSON.parse(ev.data);
+    if (d.type === 'log') {
+      if (d.id > lastLogId) { lastLogId = d.id; appendLog(d); }
+    } else if (d.type === 'status') {
+      renderStatus(d.status, d.is_alive, d.paused);
+      const ended = !d.is_alive && ['finished','error','stopped','interrupted'].includes(d.status);
+      // 只在「任务刚结束」时刷新一次，避免每 2 秒重复渲染把课程勾选清掉
+      if (ended && lastEndedTaskId !== currentTaskId) {
+        lastEndedTaskId = currentTaskId;
+        updateTaskButtons(false, false);
+        stopProgress(); loadProgress(currentTaskId); loadHistory();
+      }
+    }
+  };
+  eventSource.onerror = () => {};
+}
+
+// ============================================================
+// 开始 / 停止 / 暂停
+// ============================================================
+async function startTask() {
+  if (!selected.size) { toast('请先选择一门课程', 'error'); return; }
+  if (selected.size > 1) { toast('一次只能刷一门课程', 'error'); return; }
+  // 必须先绑定超星账号（后端会用绑定的账号登录）
+  const accBound = document.getElementById('accBound');
+  if (!accBound || accBound.style.display === 'none') {
+    toast('请先在控制面板绑定超星账号', 'error');
+    switchPage('dashboard');
+    return;
+  }
+  const cfg = {
+    course_ids: Array.from(selected),
+    speed: parseFloat(document.getElementById('speed').value),
+    jobs: parseInt(document.getElementById('jobs').value),
+    notopen_action: document.getElementById('notopenAction').value,
+    tiku_provider: document.getElementById('tikuProvider').value,
+    tiku_tokens: document.getElementById('tikuTokens').value,
+    tiku_submit: autoSubmit, tiku_cover_rate: 0.9,
+    ai_endpoint: document.getElementById('aiEndpoint').value,
+    ai_key: document.getElementById('aiKey').value,
+    ai_model: document.getElementById('aiModel').value,
+    siliconflow_key: document.getElementById('siliconflowKey').value,
+    siliconflow_model: document.getElementById('siliconflowModel').value,
+    tiku_adapter_url: document.getElementById('tikuAdapterUrl').value,
+    notify_provider: document.getElementById('notifyProvider').value,
+    notify_url: document.getElementById('notifyUrl').value,
+  };
+  const btn = document.getElementById('startBtn');
+  btn.disabled = true; btn.innerHTML = '<span class="spin"></span> 启动中...';
+  try {
+    const r = await fapi('/api/start', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify(cfg)
+    });
+    const d = await r.json();
+    if (d.success) {
+      toast('任务已启动，可关闭浏览器', 'success');
+      lastLogId = 0; logCount = 0;
+      document.getElementById('logConsole').innerHTML = '';
+      await refreshCurrent();
+      await loadHistory();
+      switchPage('dashboard');
+      // 任务刚创建时还是「排队中」，等 worker 认领后再同步几次，让暂停/停止按钮及时可用
+      [800, 2000, 4000].forEach(ms => setTimeout(() => renderStatusFromApi(), ms));
+    } else { toast(d.message, 'error'); }
+  } catch(e) { toast('网络错误：' + e.message, 'error'); }
+  finally { btn.disabled = false; btn.textContent = '▶ 开始刷课'; }
+}
+
+async function stopCurrent() {
+  if (!confirm('确定停止当前任务吗？已完成的任务点不受影响。')) return;
+  try {
+    const r = await fapi('/api/stop', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({task_id: currentTaskId})
+    });
+    const d = await r.json();
+    toast(d.message, d.success ? 'success' : 'error');
+    setTimeout(refreshCurrent, 800);
+  } catch(e) { toast('网络错误：' + e.message, 'error'); }
+}
+
+async function pauseTask() {
+  const pb = document.getElementById('pauseBtn');
+  const isPaused = pb.dataset.paused === '1';
+  const url = isPaused ? '/api/resume' : '/api/pause';
+  try {
+    const r = await fapi(url, {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({task_id: currentTaskId})
+    });
+    const d = await r.json();
+    toast(d.message, d.success ? 'success' : 'error');
+    setTimeout(refreshCurrent, 600);
+  } catch(e) { toast('网络错误：' + e.message, 'error'); }
+}
+
+// ============================================================
+// 任务历史
+// ============================================================
+async function loadHistory() {
+  try {
+    const r = await fapi('/api/tasks?limit=30');
+    const d = await r.json();
+    const box = document.getElementById('historyList');
+    if (!d.tasks.length) { box.innerHTML = '<div class="empty"><div class="empty-icon">📭</div>暂无历史记录</div>'; return; }
+    box.innerHTML = d.tasks.map(t => {
+      let dot = 'dot pending';
+      if (t.is_alive) dot = 'dot running';
+      else if (t.status === 'finished') dot = 'dot success';
+      else if (t.status === 'error' || t.status === 'interrupted') dot = 'dot failed';
+      return `<div class="task-item" onclick="viewTask(${t.id})" style="cursor:pointer;">
+        <span class="dot ${dot.split(' ')[1]}" style="display:inline-block;width:7px;height:7px;border-radius:50%;flex-shrink:0;"></span>
+        <span class="ti-name">#${t.id} ${statusText(t.status)} · ${esc(t.username) || '-'}</span>
+        <span class="ti-status pending">${fmtTime(t.start_time)}</span>
+        <span class="ti-status" style="color:rgb(var(--danger-6));padding-left:6px;"
+              onclick="event.stopPropagation();delTask(${t.id})">删除</span>
+      </div>`;
+    }).join('');
+  } catch(e) {}
+}
+
+async function viewTask(id) {
+  currentTaskId = id;
+  const r = await fapi(`/api/logs?task_id=${id}&tail=200`);
+  const d = await r.json();
+  lastLogId = 0; logCount = 0;
+  document.getElementById('logConsole').innerHTML = '';
+  d.logs.forEach(l => { appendLog(l); lastLogId = Math.max(lastLogId, l.id); });
+  await loadProgress(id);
+  switchPage('dashboard');
+  toast(`已加载任务 #${id} 的日志`);
+}
+
+async function delTask(id) {
+  if (!confirm(`删除任务 #${id} 及其日志？`)) return;
+  const r = await fapi('/api/task/delete', {
+    method:'POST', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({task_id: id})
+  });
+  const d = await r.json();
+  toast(d.message, d.success ? 'success' : 'error');
+  loadHistory();
+}
+
+async function clearHistory() {
+  if (!confirm('确定清空你自己的所有任务和日志？')) return;
+  const r = await fapi('/api/tasks/clear', {method:'POST'});
+  const d = await r.json();
+  toast(d.message, d.success ? 'success' : 'error');
+  loadHistory(); refreshCurrent();
+}
+
+// ============================================================
+// 成员管理（仅管理员）
+// ============================================================
+async function loadMembers() {
+  if (!ME || ME.role !== 'admin') return;
+  try {
+    const r = await fapi('/api/admin/users');
+    const d = await r.json();
+    if (!d.success) return;
+    document.getElementById('adminUserCount').textContent = `共 ${d.users.length} 人`;
+    const box = document.getElementById('memberList');
+    box.innerHTML = d.users.map(u => {
+      const self = ME.username === u.username;
+      const tag = u.role === 'admin'
+        ? '<span class="tag tag-blue">管理员</span>'
+        : (u.banned ? '<span class="tag tag-red">已停用</span>' : '<span class="tag tag-green">正常</span>');
+      const cx = u.cx_username ? ('已绑 ' + esc(u.cx_username)) : '未绑学习通';
+      const last = u.last_login ? ('最近登录 ' + fmtTime(u.last_login)) : '从未登录';
+      return `<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:10px 0;border-bottom:1px solid var(--color-fill-1);">
+        <span style="font-weight:600;min-width:70px;">${esc(u.username)}</span>
+        ${tag}<span class="meta">${esc(cx)} · ${last}</span>
+        <span style="margin-left:auto;display:flex;gap:6px;">
+          <button class="btn btn-outline btn-sm" onclick="resetMemberPassword('${esc(u.username)}')">改密</button>
+          ${self ? '' : `<button class="btn btn-outline btn-sm" onclick="toggleMember('${esc(u.username)}', ${u.banned ? 0 : 1})">${u.banned ? '启用' : '停用'}</button>
+          <button class="btn btn-danger btn-sm" onclick="deleteMember('${esc(u.username)}')">删除</button>`}
+        </span>
+      </div>`;
+    }).join('');
+    if (!d.users.length) box.innerHTML = '<div class="empty">还没有成员</div>';
+  } catch(e) { console.error(e); }
+}
+
+async function createMember() {
+  const username = document.getElementById('newUserName').value.trim();
+  const password = document.getElementById('newUserPass').value.trim();
+  if (!username || !password) { toast('请填写用户名和初始密码', 'error'); return; }
+  const btn = document.getElementById('newUserBtn');
+  btn.disabled = true; btn.innerHTML = '<span class="spin"></span> 添加中...';
+  try {
+    const r = await fapi('/api/admin/users/create', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ username, password })
+    });
+    const d = await r.json();
+    toast(d.message, d.success ? 'success' : 'error');
+    if (d.success) {
+      document.getElementById('newUserName').value = '';
+      document.getElementById('newUserPass').value = '';
+      loadMembers();
+    }
+  } catch(e) { toast('网络错误：' + e.message, 'error'); }
+  finally { btn.disabled = false; btn.textContent = '添加成员'; }
+}
+
+async function createMembersBatch() {
+  const raw = document.getElementById('batchUsers').value || '';
+  const pairs = [];
+  raw.split('\n').forEach(line => {
+    const parts = line.trim().split(/[\s,，]+/).filter(Boolean);
+    if (parts.length >= 2) pairs.push([parts[0], parts[1]]);
+  });
+  if (!pairs.length) { toast('请每行填「用户名 密码」', 'error'); return; }
+  const btn = document.getElementById('batchBtn');
+  btn.disabled = true; btn.innerHTML = '<span class="spin"></span> 正在添加...';
+  let ok = 0, fail = [];
+  for (const [u, p] of pairs) {
+    try {
+      const r = await fapi('/api/admin/users/create', {
+        method:'POST', headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({ username: u, password: p })
+      });
+      const d = await r.json();
+      if (d.success) ok++; else fail.push(`${u}(${d.message})`);
+    } catch(e) { fail.push(u); }
+  }
+  btn.disabled = false; btn.textContent = '批量添加';
+  toast(`成功 ${ok} 个${fail.length ? '，失败 ' + fail.length + ' 个' : ''}`, fail.length ? '' : 'success');
+  if (fail.length) console.warn('批量添加失败：', fail);
+  loadMembers();
+}
+
+async function resetMemberPassword(username) {
+  const np = prompt(`给「${username}」设置新密码（至少 6 位）：`);
+  if (np === null) return;
+  if (np.trim().length < 6) { toast('密码至少 6 位', 'error'); return; }
+  const r = await fapi('/api/admin/users/password', {
+    method:'POST', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({ username, password: np.trim() })
+  });
+  const d = await r.json();
+  toast(d.message, d.success ? 'success' : 'error');
+}
+
+async function toggleMember(username, banned) {
+  const r = await fapi('/api/admin/users/toggle', {
+    method:'POST', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({ username, banned: !!banned })
+  });
+  const d = await r.json();
+  toast(d.message, d.success ? 'success' : 'error');
+  loadMembers();
+}
+
+async function deleteMember(username) {
+  if (!confirm(`确定删除成员「${username}」？会同时解绑其学习通账号，不可恢复。`)) return;
+  const r = await fapi('/api/admin/users/delete', {
+    method:'POST', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({ username })
+  });
+  const d = await r.json();
+  toast(d.message, d.success ? 'success' : 'error');
+  loadMembers();
+}
+
+async function changePassword() {
+  const oldp = document.getElementById('pwdOld').value;
+  const np = document.getElementById('pwdNew').value;
+  const np2 = document.getElementById('pwdNew2').value;
+  if (!oldp || !np) { toast('请填写原密码和新密码', 'error'); return; }
+  if (np.length < 6) { toast('新密码至少 6 位', 'error'); return; }
+  if (np !== np2) { toast('两次输入的新密码不一致', 'error'); return; }
+  const btn = document.getElementById('pwdBtn');
+  btn.disabled = true; btn.innerHTML = '<span class="spin"></span> 保存中...';
+  try {
+    const r = await fapi('/api/auth/password', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ old_password: oldp, new_password: np })
+    });
+    const d = await r.json();
+    toast(d.message, d.success ? 'success' : 'error');
+    if (d.success) {
+      document.getElementById('pwdOld').value = '';
+      document.getElementById('pwdNew').value = '';
+      document.getElementById('pwdNew2').value = '';
+    }
+  } catch(e) { toast('网络错误：' + e.message, 'error'); }
+  finally { btn.disabled = false; btn.textContent = '保存新密码'; }
+}
+
+// ============================================================
+// UI 辅助
+// ============================================================
+function toggleSubmit() {
+  autoSubmit = !autoSubmit;
+  document.getElementById('submitToggle').classList.toggle('on', autoSubmit);
+}
+function toggleColl(id) {
+  document.getElementById(id).classList.toggle('open');
+  document.getElementById(id.replace('Body','Arrow')).classList.toggle('open');
+}
+function onProvider() {
+  const p = document.getElementById('tikuProvider').value;
+  document.getElementById('gToken').style.display = ['TikuYanxi','TikuLike','TikuGo'].includes(p) ? 'block' : 'none';
+  document.getElementById('gAI').style.display = p === 'AI' ? 'block' : 'none';
+  document.getElementById('gSF').style.display = p === 'SiliconFlow' ? 'block' : 'none';
+  document.getElementById('gAD').style.display = p === 'TikuAdapter' ? 'block' : 'none';
+}
+onProvider();
+
+// 定时兜底同步：状态与暂停/停止按钮都跟着刷新，避免「要手动刷新页面按钮才出来」
+setInterval(async () => {
+  try {
+    const r = await fapi('/api/current');
+    const d = await r.json();
+    if (!d.has_task) { updateTaskButtons(false, false); return; }
+    const t = d.task;
+    renderStatus(t.status, t.is_alive, t.paused);
+    updateTaskButtons((t.status === 'running' && t.is_alive), t.paused);
+    if (t.id !== currentTaskId) refreshCurrent();
+  } catch(e) {}
+}, 5000);
+
+window.addEventListener('resize', () => {
+  const mn = document.getElementById('mobileNav');
+  if (mn && document.getElementById('appLayout').style.display !== 'none') {
+    mn.style.display = window.innerWidth <= 768 ? 'flex' : 'none';
+  }
+});
+</script>
+</body>
+</html>
